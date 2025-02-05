@@ -3,6 +3,6 @@ package deepseek
 type Client struct {
 }
 
-func NewClient(string, string, string) *Client {
+func NewClient(token, baseUrl, model string) *Client {
 	return &Client{}
 }

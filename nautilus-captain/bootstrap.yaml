@@ -1,0 +1,11 @@
+agent:
+  engine: ""
+  model: ""
+  token: ""
+  baseUrl: ""
+
+mq:
+  host: ""
+  port: ""
+  topic: ""
+  server_type: ""
