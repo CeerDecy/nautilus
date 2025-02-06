@@ -1,5 +1,7 @@
 captain:
 
+nautilus-kubernetes:
+
 nautilus-ai:
   engine: "${AGENT_ENGINE}"
   model: "${AGENT_MODEL}"

@@ -6,6 +6,7 @@ import (
 
 	_ "nautilus/nautilus-captain/captain"
 	_ "nautilus/nautilus-common/ai"
+	_ "nautilus/nautilus-common/k8s"
 	_ "nautilus/nautilus-common/mq"
 )
 

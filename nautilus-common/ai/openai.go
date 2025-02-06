@@ -19,7 +19,11 @@ func NewOpenAi(token, baseUrl, model string) *Openai {
 	}
 }
 
-func (c *Openai) Chat() (string, error) {
+func (o *Openai) Engine() string {
+	return EngineOpenai
+}
+
+func (o *Openai) Chat() (string, error) {
 	//stream, err := c.Openai.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
 	//	Model:    c.model,
 	//	Messages: make([]openai.ChatCompletionMessage, 0),
