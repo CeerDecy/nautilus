@@ -1,21 +1,21 @@
-package mqtt
+package mq
 
 import (
 	"fmt"
+	"time"
+
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/sirupsen/logrus"
-	"nautilus/nautilus-common/mq"
-	"time"
 )
 
-type Client struct {
+type Mqtt struct {
 	mqtt.Client
-	subTopics map[string]mq.MessageHandler
+	subTopics map[string]MessageHandler
 }
 
-func NewClient(host, port, clientId string) *Client {
-	var c = &Client{
-		subTopics: make(map[string]mq.MessageHandler),
+func NewMQTT(host, port, clientId string) *Mqtt {
+	var c = &Mqtt{
+		subTopics: make(map[string]MessageHandler),
 	}
 	options := mqtt.NewClientOptions()
 	options.AddBroker(fmt.Sprintf("tcp://%s:%s", host, port))
@@ -41,12 +41,12 @@ func NewClient(host, port, clientId string) *Client {
 	return c
 }
 
-func (c *Client) Publish(topic string, data []byte) error {
+func (c *Mqtt) Publish(topic string, data []byte) error {
 	c.Client.Publish(topic, 2, false, data)
 	return nil
 }
 
-func (c *Client) Subscribe(topic string, handler mq.MessageHandler) {
+func (c *Mqtt) Subscribe(topic string, handler MessageHandler) {
 	if _, ok := c.subTopics[topic]; !ok {
 		c.Unsubscribe(topic)
 	}
@@ -57,7 +57,7 @@ func (c *Client) Subscribe(topic string, handler mq.MessageHandler) {
 	logrus.Infof("mqtt client subscribed, topic=%s", topic)
 }
 
-func (c *Client) connect() {
+func (c *Mqtt) connect() {
 	c.Connect()
 	ticker := time.NewTicker(500 * time.Millisecond)
 	for {

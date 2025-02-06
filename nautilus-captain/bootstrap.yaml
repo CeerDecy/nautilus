@@ -1,11 +1,13 @@
-agent:
-  engine: ""
-  model: ""
-  token: ""
-  baseUrl: ""
+captain:
 
-mq:
-  host: ""
-  port: ""
-  topic: ""
-  server_type: ""
+nautilus-ai:
+  engine: "${AGENT_ENGINE}"
+  model: "${AGENT_MODEL}"
+  token: "${AGENT_TOKEN}"
+  baseUrl: "${AGENT_BASEURL}"
+
+nautilus-mq:
+  host: "${MQ_HOST}"
+  port: "${MQ_PORT}"
+  topic: "${MQ_TOPIC}"
+  server_type: "${MQ_SERVER_TYPE}"

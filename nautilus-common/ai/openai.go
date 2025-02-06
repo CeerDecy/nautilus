@@ -1,26 +1,26 @@
-package openai
+package ai
 
 import (
 	"github.com/sashabaranov/go-openai"
 )
 
-type Client struct {
+type Openai struct {
 	*openai.Client
 	model string
 }
 
-func NewClient(token, baseUrl, model string) *Client {
+func NewOpenAi(token, baseUrl, model string) *Openai {
 	config := openai.DefaultConfig(token)
 	config.BaseURL = baseUrl
 
-	return &Client{
+	return &Openai{
 		Client: openai.NewClientWithConfig(config),
 		model:  model,
 	}
 }
 
-func (c *Client) Chat() (string, error) {
-	//stream, err := c.Client.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
+func (c *Openai) Chat() (string, error) {
+	//stream, err := c.Openai.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
 	//	Model:    c.model,
 	//	Messages: make([]openai.ChatCompletionMessage, 0),
 	//	Stream:   true,
