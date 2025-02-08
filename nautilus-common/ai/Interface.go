@@ -6,5 +6,6 @@ import (
 
 type Interface interface {
 	Engine() string
-	Send(conversation *message.Conversation) message.Session
+	Send(conversation *message.Conversation) (message.Session, error)
+	SetTools(tools []Tool)
 }

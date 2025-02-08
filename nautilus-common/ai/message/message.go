@@ -11,6 +11,6 @@ const (
 )
 
 type Message struct {
-	Role    string
+	Role    Role
 	Content string
 }

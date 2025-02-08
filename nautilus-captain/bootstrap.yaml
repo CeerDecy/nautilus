@@ -2,14 +2,35 @@ captain:
 
 nautilus-kubernetes:
 
+nautilus-ai-agent:
+  component: "captain"
+  prompt:
+    - "“鹦鹉螺号”是一个自动维护Kubernetes的一个应用，由以下这几个成员组成：
+nautilus-core（鹦鹉螺号核心）: 负责调度任务，存储任务状态，告警等操作
+nautilus-captain（鹦鹉螺号船长）: 负责判断Kubernetes中各个Pod的状态，根据不同的状态为不同的角色创建出不同的任务。
+nautilus-censor（鹦鹉螺号检查员）: 负责获取任务目标，并且分析出完成任务所需要的步骤，再一步步执行，检查员只具有只读权限，并没有对Kubernetes进行创建、更新、删除的权限，如果涉及这类操作需要提交任务给carpenter。
+nautilus-carpenter（鹦鹉螺号木匠）：负责修复Kubernetes中的异常状态，它的能力比censor更多，具有创建、更新、删除的权限。
+
+其中captain、censor、carpenter都会和core进行直接交互，因此他们的输出内容必须为json格式，其json内容是每个成员所能执行的指令（指令我会以markdown的格式发生给你）。注意：输出的内容不是在markdown格式中的json，而是直接输出json字符串。"
+    - "接下来你的职位是nautilus-captain（鹦鹉螺号船长），core会每隔一段时间向你发送某些Pod的状态，你需要确保所有的Pod都是正常的状态。
+    你可以调用Tools，这些Tools包含了你所能执行的所有工具。
+    举例：如果Pod处于异常状态，你需要为这个或这些Pod创建出排查任务（create_task），在创建任务之前你需要向这个定时进程发送一个任务列表（list_tasks）请求，确保即将创建的任务没有在当前任务列表中，避免重复执行任务，当你收到任务列表的回复后再进行判断是否要执行创建任务。如果不需要执行任何命令则可以调用工具（none）"
+
 nautilus-ai:
-  engine: "${AGENT_ENGINE}"
-  model: "${AGENT_MODEL}"
-  token: "${AGENT_TOKEN}"
-  baseUrl: "${AGENT_BASEURL}"
+  engine: "${AI_ENGINE}"
+  model: "${AI_MODEL}"
+  token: "${AI_TOKEN}"
+  baseUrl: "${AI_BASEURL}"
 
 nautilus-mq:
   host: "${MQ_HOST}"
   port: "${MQ_PORT}"
   topic: "${MQ_TOPIC}"
   server_type: "${MQ_SERVER_TYPE}"
+
+mysql-provider:
+  host: "${MYSQL_HOST}"
+  port: "${MYSQL_PORT}"
+  database: "${MYSQL_DATABASE}"
+  username: "${MYSQL_USERNAME}"
+  password: "${MYSQL_PASSWORD}"

@@ -1,0 +1,5 @@
+{
+  "time": "2025-02-08 15:48",
+  "id": "kasjhf74yfgahdgi9304yh8foajlkhdjfu",
+  "content": "\"pods\": [\n      {\n        \"name\": \"demo-ajduhu\",\n        \"namespace\": \"default\",\n        \"phase\": \"Pending\",\n        \"container_statuses\": [\n          {\n            \"container_name\": \"clickhouse\",\n            \"state\": \"Error\"\n          }\n        ]\n      }\n    ]"
+}

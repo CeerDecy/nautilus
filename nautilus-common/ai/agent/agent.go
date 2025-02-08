@@ -7,8 +7,12 @@ import (
 	"nautilus/nautilus-common/ai/model"
 )
 
-func (p *provider) MessageChannel() chan string {
-	return p.msg
+type Interface interface {
+	Send(data string)
+}
+
+func (p *provider) Send(data string) {
+	p.msg <- data
 }
 
 func (p *provider) Start() {
@@ -21,10 +25,15 @@ func (p *provider) Start() {
 		}
 		conversation, ok := p.conversations[content.Id]
 		if !ok {
-			conversation = message.NewConversation([]message.Message{}, 10)
+			conversation = message.NewConversation(p.prompt, 10)
 			p.conversations[content.Id] = conversation
 		}
 		conversation.Append(message.ChatMessageRoleUser, content.Content)
-		p.ai.Send(conversation)
+		session, err := p.Ai.Send(conversation)
+		if err != nil {
+			logrus.Errorf("send message to agent error: %s", err.Error())
+		}
+		_ = session
+		//logrus.Infof(string(session.ReadMessage()))
 	}
 }

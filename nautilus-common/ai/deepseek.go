@@ -1,9 +1,23 @@
 package ai
 
+import (
+	"nautilus/nautilus-common/ai/message"
+)
+
 type DeepSeek struct {
 }
 
-func NewDeepSeek(token, baseUrl, model string) *DeepSeek {
+func (d *DeepSeek) SetTools(tools []Tool) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (d *DeepSeek) Send(conversation *message.Conversation) (message.Session, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func NewDeepSeek(token, baseUrl, model string) Interface {
 	return &DeepSeek{}
 }
 
