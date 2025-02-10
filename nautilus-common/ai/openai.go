@@ -47,6 +47,7 @@ func (o *Openai) SetTools(tools []Tool) {
 
 func (o *Openai) Send(conversation *message.Conversation) (message.Session, error) {
 	openaiMessage := convertToOpenaiMessage(conversation)
+	fmt.Printf("function tools ===> %v", o.tools)
 	stream, err := o.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
 		Model:    o.model,
 		Messages: openaiMessage,
@@ -59,8 +60,7 @@ func (o *Openai) Send(conversation *message.Conversation) (message.Session, erro
 	if err != nil {
 		return nil, err
 	}
-	session := NewOpenAiSession(stream)
-	return session, nil
+	return NewOpenAiSession(stream), nil
 }
 
 type OpenaiSession struct {
@@ -114,7 +114,12 @@ func (o *OpenaiSession) readStream() {
 			o.lock.Lock()
 			o.buf = append(o.buf, v.Delta.Content...)
 			o.content = append(o.content, v.Delta.Content...)
-			fmt.Printf("%+v\n", v)
+			for _, toolcall := range v.Delta.ToolCalls {
+				//if toolcall.Function.Name != "" {
+				//
+				//}
+				fmt.Printf("toolcall ===> %+v\n", toolcall)
+			}
 			o.lock.Unlock()
 		}
 	}

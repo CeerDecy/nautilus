@@ -9,10 +9,10 @@ import (
 	"nautilus/nautilus-common/mq"
 )
 
-type cfg struct {
+type config struct {
 }
 type provider struct {
-	Cfg   *cfg
+	Cfg   *config
 	Mq    mq.Interface    `autowired:"nautilus-mq"`
 	Agent agent.Interface `autowired:"nautilus-ai-agent"`
 	K8s   k8s.Interface   `autowired:"nautilus-kubernetes"`
@@ -38,7 +38,7 @@ func init() {
 			"nautilus-kubernetes",
 		},
 		OptionalDependencies: []string{},
-		ConfigFunc:           func() interface{} { return &cfg{} },
+		ConfigFunc:           func() interface{} { return &config{} },
 		Creator: func() servicehub.Provider {
 			return &provider{}
 		},

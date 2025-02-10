@@ -1,7 +1,5 @@
 package message
 
-import "github.com/sirupsen/logrus"
-
 type Conversation struct {
 	prompt []Message
 	msg    []Message
@@ -31,7 +29,5 @@ func (c *Conversation) Append(role Role, content string) {
 }
 
 func (c *Conversation) Messages() []Message {
-	logrus.Infof("conversation:%v", len(c.msg))
-	logrus.Infof("conversation:%v", len(c.prompt))
 	return append(c.prompt, c.msg...)
 }

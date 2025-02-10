@@ -22,6 +22,7 @@ func (p *provider) Start() {
 		err := json.Unmarshal([]byte(msg), &content)
 		if err != nil {
 			logrus.Errorf("unmarshal agent content error: %s", err.Error())
+			continue
 		}
 		conversation, ok := p.conversations[content.Id]
 		if !ok {
@@ -34,6 +35,6 @@ func (p *provider) Start() {
 			logrus.Errorf("send message to agent error: %s", err.Error())
 		}
 		_ = session
-		//logrus.Infof(string(session.ReadMessage()))
+		logrus.Infof("%+v", conversation.Messages())
 	}
 }
