@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/erda-project/erda-infra/base/servicehub"
-	"nautilus/nautilus-common/ai"
-	"nautilus/nautilus-common/ai/agent/service"
-	"nautilus/nautilus-common/ai/message"
-	"nautilus/nautilus-common/mysql"
+	"github/ceerdecy/nautilus/nautilus-common/ai/agent/service"
+	"github/ceerdecy/nautilus/nautilus-common/ai/client"
+	"github/ceerdecy/nautilus/nautilus-common/ai/model"
+	"github/ceerdecy/nautilus/nautilus-common/mysql"
 )
 
 type config struct {
@@ -17,15 +17,16 @@ type config struct {
 
 type provider struct {
 	Cfg           *config
-	Ai            ai.Interface    `autowired:"nautilus-ai"`
-	Db            mysql.Interface `autowired:"mysql-provider"`
-	msg           chan string
+	Ai            client.Interface `autowired:"nautilus-ai"`
+	Db            mysql.Interface  `autowired:"mysql-provider"`
+	msg           chan model.AgentContent
 	component     string
-	conversations map[string]*message.Conversation
+	conversations map[string]*client.Conversation
+	response      map[string]chan client.Response
 	resp          chan string
-	prompt        []message.Message
+	prompt        []client.Message
 	toolsService  *service.ToolsService
-	tools         []ai.Tool
+	tools         []client.Tool
 }
 
 func (p *provider) Init(ctx servicehub.Context) (err error) {
@@ -33,9 +34,9 @@ func (p *provider) Init(ctx servicehub.Context) (err error) {
 	p.toolsService = service.NewToolsService(p.Db.DB())
 	tools := p.toolsService.GetToolsByRole(p.component)
 	for _, tool := range tools {
-		p.tools = append(p.tools, ai.Tool{
-			Type: ai.ToolTypeFunction,
-			Function: &ai.FunctionDefinition{
+		p.tools = append(p.tools, client.Tool{
+			Type: client.ToolTypeFunction,
+			Function: &client.FunctionDefinition{
 				Name:        tool.Name,
 				Description: tool.Description,
 				Strict:      tool.Strict,
@@ -45,9 +46,9 @@ func (p *provider) Init(ctx servicehub.Context) (err error) {
 	}
 	p.Ai.SetTools(p.tools)
 	for _, v := range p.Cfg.Prompt {
-		p.prompt = append(p.prompt, message.Message{
-			Role:    message.ChatMessageRoleSystem,
-			Content: v,
+		p.prompt = append(p.prompt, client.Message{
+			Role:    client.ChatMessageRoleSystem,
+			Content: []byte(v),
 		})
 	}
 	return nil
@@ -65,11 +66,12 @@ func init() {
 		ConfigFunc:   func() interface{} { return &config{} },
 		Creator: func() servicehub.Provider {
 			return &provider{
-				msg:           make(chan string),
-				conversations: make(map[string]*message.Conversation),
+				msg:           make(chan model.AgentContent),
+				conversations: make(map[string]*client.Conversation),
 				resp:          make(chan string),
-				prompt:        make([]message.Message, 0),
-				tools:         make([]ai.Tool, 0),
+				prompt:        make([]client.Message, 0),
+				tools:         make([]client.Tool, 0),
+				response:      make(map[string]chan client.Response),
 			}
 		},
 	})

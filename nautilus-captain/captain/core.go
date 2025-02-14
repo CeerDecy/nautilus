@@ -4,14 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/sirupsen/logrus"
+	"github/ceerdecy/nautilus/nautilus-captain/captain/toolcall"
+	"github/ceerdecy/nautilus/nautilus-common/ai/agent"
+	"github/ceerdecy/nautilus/nautilus-common/ai/client"
+	"github/ceerdecy/nautilus/nautilus-common/ai/model"
+	"github/ceerdecy/nautilus/nautilus-common/k8s"
+	"github/ceerdecy/nautilus/nautilus-common/mq"
+	"github/ceerdecy/nautilus/nautilus-common/tools/markdown"
+	"github/ceerdecy/nautilus/nautilus-common/tools/str"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"nautilus/nautilus-common/ai/agent"
-	"nautilus/nautilus-common/ai/model"
-	"nautilus/nautilus-common/k8s"
-	"nautilus/nautilus-common/mq"
-	"nautilus/nautilus-common/tools/markdown"
-	"nautilus/nautilus-common/tools/str"
 	"slices"
 	"time"
 )
@@ -23,6 +25,7 @@ type Core struct {
 	console          *Console
 	ignoreNamespaces []string
 	ignorePods       []string
+	parser           *toolcall.Parser
 }
 
 func NewCore(m mq.Interface, a agent.Interface, k k8s.Interface) *Core {
@@ -68,9 +71,10 @@ func (core *Core) monitor() {
 			}
 		}
 
-		unHealthy = make([]corev1.Pod, 0)
+		//unHealthy = make([]corev1.Pod, 0)
 
-		var content string = "all pods are healthy"
+		var content = "all pods are healthy"
+		//var content string = "who are you?"
 		if len(unHealthy) != 0 {
 			content = markdown.ToMarkdownTable(convertToPodMaps(unHealthy))
 		}
@@ -85,9 +89,31 @@ func (core *Core) monitor() {
 			logrus.Printf("Failed to marshal content: %v", err)
 			continue
 		}
-		core.ai.Send(string(marshal))
-		//fmt.Println(table)
+		responses, err := core.ai.Send(marshal)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*30)
+		_ = cancel
+		go func(ctx context.Context) {
+			select {
+			case <-ctx.Done():
+				logrus.Printf("Timeout waiting for response")
+				return
+			case resp := <-responses:
+				core.dealResponse(resp)
+			}
+		}(ctx)
 		<-tick
+	}
+}
+
+func (core *Core) dealResponse(resp client.Response) {
+	switch resp.Type {
+	case client.RespMessage:
+		logrus.Printf("conversation id [%v], response: %s", resp.ConversationId, string(resp.Content))
+	case client.RespToolCall:
+		for _, toolcall := range resp.ToolCalls {
+			//aitools.RegisterToolCall(toolcall.Function.Name)
+			toolcall.ParseToolCall(toolcall.Function.Name, toolcall.Function.Arguments)
+		}
 	}
 }
 

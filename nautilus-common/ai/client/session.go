@@ -1,8 +1,8 @@
-package message
+package client
 
 import "io"
 
 type Session interface {
 	HandleWrite() func(w io.Writer) bool
-	ReadMessage() []byte
+	ReadMessage() Message
 }

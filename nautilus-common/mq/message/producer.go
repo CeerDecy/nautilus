@@ -2,7 +2,7 @@ package message
 
 import (
 	"github.com/sirupsen/logrus"
-	"nautilus/nautilus-common/mq"
+	"github/ceerdecy/nautilus/nautilus-common/mq"
 )
 
 type Producer struct {

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package nautilus.core.aitool;
+option go_package = "github.com/ceerdecy/nautilus-proto-go/core/aitool/pb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+message AiTool {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  bool strict = 4;
+  string parameters = 5;
+  string role = 6;
+}
+
+message ListAiToolsRequest {
+  repeated string roles = 1;
+}
+
+message ListAiToolsResponse {
+  repeated AiTool data = 1;
+}
+
+service AiToolService {
+  rpc ListAiTools(ListAiToolsRequest) returns (ListAiToolsResponse) {
+    option (google.api.http) = {
+      get: "/api/core/ai-tools?roles={roles}",
+    };
+  }
+}

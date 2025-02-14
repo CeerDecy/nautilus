@@ -1,12 +1,12 @@
-package ai
+package impl
 
 import (
 	"bytes"
 	"context"
 	"fmt"
 	"github.com/sashabaranov/go-openai"
+	"github/ceerdecy/nautilus/nautilus-common/ai/client"
 	"io"
-	"nautilus/nautilus-common/ai/message"
 	"sync"
 )
 
@@ -28,11 +28,14 @@ func NewOpenAi(token, baseUrl, model string) *Openai {
 }
 
 func (o *Openai) Engine() string {
-	return EngineOpenai
+	return client.EngineOpenai
 }
 
-func (o *Openai) SetTools(tools []Tool) {
+func (o *Openai) SetTools(tools []client.Tool) {
 	for _, v := range tools {
+		if v.Function == nil {
+			continue
+		}
 		o.tools = append(o.tools, openai.Tool{
 			Type: openai.ToolType(v.Type),
 			Function: &openai.FunctionDefinition{
@@ -45,9 +48,9 @@ func (o *Openai) SetTools(tools []Tool) {
 	}
 }
 
-func (o *Openai) Send(conversation *message.Conversation) (message.Session, error) {
+func (o *Openai) Send(conversation *client.Conversation) (client.Session, error) {
 	openaiMessage := convertToOpenaiMessage(conversation)
-	fmt.Printf("function tools ===> %v", o.tools)
+	fmt.Printf("function tools ===> %v\n", o.tools)
 	stream, err := o.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
 		Model:    o.model,
 		Messages: openaiMessage,
@@ -64,12 +67,15 @@ func (o *Openai) Send(conversation *message.Conversation) (message.Session, erro
 }
 
 type OpenaiSession struct {
-	stream  *openai.ChatCompletionStream
-	buf     []byte
-	content []byte
-	done    chan struct{}
-	isDone  bool
-	lock    sync.Mutex
+	stream    *openai.ChatCompletionStream
+	buf       []byte
+	content   []byte
+	done      chan struct{}
+	isDone    bool
+	lock      sync.Mutex
+	role      string
+	refusal   string
+	toolCalls []openai.ToolCall
 }
 
 func NewOpenAiSession(stream *openai.ChatCompletionStream) *OpenaiSession {
@@ -98,16 +104,15 @@ func (o *OpenaiSession) readBuf() []byte {
 
 func (o *OpenaiSession) readStream() {
 	for {
-		fmt.Printf("readStream start\n")
 		recv, err := o.stream.Recv()
 		if err != nil {
-			fmt.Printf("readStream recv err: %v\n", err)
+			fmt.Printf("stream.Recv() err: %v\n", err)
 			o.lock.Lock()
-			fmt.Printf("content ====> %v\n", string(o.content))
 			_ = o.stream.Close()
 			o.isDone = true
 			o.done <- struct{}{}
 			o.lock.Unlock()
+			return
 		}
 		//recv.ID
 		for _, v := range recv.Choices {
@@ -115,36 +120,60 @@ func (o *OpenaiSession) readStream() {
 			o.buf = append(o.buf, v.Delta.Content...)
 			o.content = append(o.content, v.Delta.Content...)
 			for _, toolcall := range v.Delta.ToolCalls {
-				//if toolcall.Function.Name != "" {
-				//
-				//}
-				fmt.Printf("toolcall ===> %+v\n", toolcall)
+				o.toolCalls = append(o.toolCalls, toolcall)
 			}
+			o.role = v.Delta.Role
+			o.refusal = v.Delta.Refusal
 			o.lock.Unlock()
 		}
 	}
 }
 
-func (o *OpenaiSession) ReadMessage() []byte {
+func (o *OpenaiSession) convertToolCalls() []client.ToolCall {
+	var toolCalls = make([]client.ToolCall, 0)
+	for _, call := range o.toolCalls {
+		toolCalls = append(toolCalls, client.ToolCall{
+			Type: client.ToolType(call.Type),
+			Function: client.FunctionCall{
+				Name:      call.Function.Name,
+				Arguments: call.Function.Arguments,
+			},
+			ID:    call.ID,
+			Index: call.Index,
+		})
+	}
+	return toolCalls
+}
+
+func (o *OpenaiSession) ReadMessage() client.Message {
 	if o.isDone {
-		return o.content
+		return client.Message{
+			Role:      client.Role(o.role),
+			Content:   o.content,
+			Refusal:   o.refusal,
+			ToolCalls: o.convertToolCalls(),
+		}
 	}
 	write := o.HandleWrite()
 
 	var buffer bytes.Buffer
 	for write(&buffer) {
 	}
-	return buffer.Bytes()
+	return client.Message{
+		Role:      client.Role(o.role),
+		Content:   buffer.Bytes(),
+		Refusal:   o.refusal,
+		ToolCalls: o.convertToolCalls(),
+	}
 }
 
 func (o *OpenaiSession) HandleWrite() func(writer io.Writer) bool {
 	return func(writer io.Writer) bool {
-		o.lock.Lock()
-		defer o.lock.Unlock()
 		buf := o.readBuf()
 		var err error
 		if len(buf) > 0 {
 			_, err = writer.Write(buf)
+			//fmt.Printf("buffer ====> %v\n", string(buf))
 		}
 		select {
 		case <-o.done:
@@ -155,12 +184,14 @@ func (o *OpenaiSession) HandleWrite() func(writer io.Writer) bool {
 	}
 }
 
-func convertToOpenaiMessage(conversation *message.Conversation) []openai.ChatCompletionMessage {
+func convertToOpenaiMessage(conversation *client.Conversation) []openai.ChatCompletionMessage {
 	var openaiMessage []openai.ChatCompletionMessage
 	for _, msg := range conversation.Messages() {
 		openaiMessage = append(openaiMessage, openai.ChatCompletionMessage{
 			Role:    string(msg.Role),
-			Content: msg.Content,
+			Content: string(msg.Content),
+			Refusal: msg.Refusal,
+			//ToolCalls: make([]openai.ToolCall, 0),
 		})
 	}
 	return openaiMessage

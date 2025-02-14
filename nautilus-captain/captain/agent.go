@@ -2,17 +2,17 @@ package captain
 
 import (
 	"context"
-	"nautilus/nautilus-common/ai"
+	"github/ceerdecy/nautilus/nautilus-common/ai/client"
 )
 
 type Agent struct {
 	msg    chan string
-	ai     ai.Interface
+	ai     client.Interface
 	ctx    context.Context
 	cancel context.CancelFunc
 }
 
-func NewAgent(ctx context.Context, a ai.Interface) *Agent {
+func NewAgent(ctx context.Context, a client.Interface) *Agent {
 	ctx, cancelFunc := context.WithCancel(ctx)
 	return &Agent{
 		msg:    make(chan string),

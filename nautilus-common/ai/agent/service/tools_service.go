@@ -3,8 +3,8 @@ package service
 import (
 	"errors"
 	"github.com/sirupsen/logrus"
+	"github/ceerdecy/nautilus/nautilus-core/aitools/model"
 	"gorm.io/gorm"
-	"nautilus/nautilus-common/mysql/model"
 )
 
 type ToolsService struct {

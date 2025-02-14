@@ -1,4 +1,4 @@
-package message
+package client
 
 type Conversation struct {
 	prompt []Message
@@ -20,7 +20,7 @@ func NewConversation(prompt []Message, maxLen int) *Conversation {
 func (c *Conversation) Append(role Role, content string) {
 	msg := append(c.msg, Message{
 		Role:    role,
-		Content: content,
+		Content: []byte(content),
 	})
 	if len(msg) > c.maxLen {
 		msg = msg[len(msg)-c.maxLen:]

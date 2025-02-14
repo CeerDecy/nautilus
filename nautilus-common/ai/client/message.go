@@ -1,4 +1,4 @@
-package message
+package client
 
 type Role string
 
@@ -11,6 +11,8 @@ const (
 )
 
 type Message struct {
-	Role    Role
-	Content string
+	Role      Role
+	Content   []byte
+	Refusal   string
+	ToolCalls []ToolCall
 }

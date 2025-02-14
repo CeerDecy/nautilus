@@ -1,9 +1,10 @@
-module nautilus
+module github/ceerdecy/nautilus
 
 go 1.23.4
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.5.0
+	github.com/ceerdecy/nautilus-proto-go v1.0.0
 	github.com/erda-project/erda-infra v1.0.9
 	github.com/sashabaranov/go-openai v1.36.1
 	github.com/sirupsen/logrus v1.9.3
@@ -12,7 +13,9 @@ require (
 	k8s.io/apimachinery v0.32.1
 	k8s.io/client-go v0.32.1
 )
-
+replace (
+	github.com/ceerdecy/nautilus-proto-go v1.0.0 => ./api/proto-go
+)
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect

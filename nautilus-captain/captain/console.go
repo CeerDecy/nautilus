@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"nautilus/nautilus-common/k8s"
+	"github/ceerdecy/nautilus/nautilus-common/k8s"
 	"sync"
 )
 

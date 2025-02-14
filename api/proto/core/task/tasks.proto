@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package nautilus.core.task;
+option go_package = "github.com/ceerdecy/nautilus-proto-go/core/task/pb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+message Task {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string status = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+
+message TaskList {
+  repeated Task tasks = 1;
+}
+message TaskCreateRequest {
+  string name = 1;
+  string description = 2;
+}
+message TaskCreateResponse {
+  string id = 1;
+}
+service TaskService {
+  rpc Create(TaskCreateRequest) returns (TaskCreateResponse) {
+    option (google.api.http) = {
+      post: "/api/core/tasks"
+    };
+  };
+  rpc List(TaskList) returns (TaskList) {
+    option (google.api.http) = {
+      get: "/api/core/tasks"
+    };
+  };
+}

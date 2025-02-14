@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/erda-project/erda-infra/base/servicehub"
 	"github.com/sirupsen/logrus"
-	"nautilus/nautilus-common/ai/agent"
-	"nautilus/nautilus-common/k8s"
-	"nautilus/nautilus-common/mq"
+	"github/ceerdecy/nautilus/nautilus-common/ai/agent"
+	"github/ceerdecy/nautilus/nautilus-common/k8s"
+	"github/ceerdecy/nautilus/nautilus-common/mq"
 )
 
 type config struct {

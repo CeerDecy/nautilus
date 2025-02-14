@@ -4,12 +4,12 @@ import (
 	_ "embed"
 	"github.com/erda-project/erda-infra/base/servicehub"
 
-	_ "nautilus/nautilus-captain/captain"
-	_ "nautilus/nautilus-common/ai"
-	_ "nautilus/nautilus-common/ai/agent"
-	_ "nautilus/nautilus-common/k8s"
-	_ "nautilus/nautilus-common/mq"
-	_ "nautilus/nautilus-common/mysql"
+	_ "github/ceerdecy/nautilus/nautilus-captain/captain"
+	_ "github/ceerdecy/nautilus/nautilus-common/ai"
+	_ "github/ceerdecy/nautilus/nautilus-common/ai/agent"
+	_ "github/ceerdecy/nautilus/nautilus-common/k8s"
+	_ "github/ceerdecy/nautilus/nautilus-common/mq"
+	_ "github/ceerdecy/nautilus/nautilus-common/mysql"
 )
 
 //go:embed bootstrap.yaml
